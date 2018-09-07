@@ -353,6 +353,14 @@ public class ThunderLaser extends LaserCutter
 
     ruida.setName(job.getTitle());
 
+    double maxXmm = 0;
+    for (JobPart p : job.getParts())
+    {
+      maxXmm = Math.max(maxXmm, Util.px2mm(p.getMaxX(), p.getDPI()));
+    }
+
+    System.out.println(String.format("calculated maxXmm = %f", maxXmm));
+
     for (JobPart p : job.getParts())
     {
       float focus;
@@ -415,13 +423,13 @@ public class ThunderLaser extends LaserCutter
                 }
                 addRunway = false; // only once per line
               }
-              ruida.moveTo(rx + runway, ry);
-              ruida.moveTo(rx, ry);
+              ruida.moveTo(maxXmm - rx - runway, ry);
+              ruida.moveTo(maxXmm - rx, ry);
 //              System.out.println(String.format("%d: Black from %.2f", y, rx));
               // set last pixel of old color
               rx = Util.px2mm(sp.x + xe + (leftToRight?-1:1), dpi);
 //              System.out.println(String.format("%d:         to %.2f", y, rx));
-              ruida.lineTo(rx, ry);
+              ruida.lineTo(maxXmm - rx, ry);
             }
             else {
 //              System.out.println(String.format("%d: %s", y, (colorIsBlack)?"too narrow":"not black"));
@@ -459,7 +467,7 @@ public class ThunderLaser extends LaserCutter
               /**
                * Move the laserhead (laser on) from the current position to the x/y position of this command.
                */
-              double x = Util.px2mm(cmd.getX(), p.getDPI());
+              double x = maxXmm - Util.px2mm(cmd.getX(), p.getDPI());
               double y = Util.px2mm(cmd.getY(), p.getDPI());
               ruida.lineTo(x, y);
               break;
@@ -469,7 +477,7 @@ public class ThunderLaser extends LaserCutter
               /**
                * Move the laserhead (laser off) from the current position to the x/y position of this command.
                */
-              double x = Util.px2mm(cmd.getX(), p.getDPI());
+              double x = maxXmm - Util.px2mm(cmd.getX(), p.getDPI());
               double y = Util.px2mm(cmd.getY(), p.getDPI());
               ruida.moveTo(x, y);
               break;
