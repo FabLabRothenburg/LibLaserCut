@@ -62,6 +62,9 @@ import com.t_oster.liblasercut.drivers.ruida.UdpStream;
 
 public class Ruida
 {
+  private static final double FACTOR_X = 460 / 462.5;
+  private static final double FACTOR_Y = 460 / 471.5;
+
   public static final int DEST_PORT = 50200; // fixed UDB port
   public static final int NETWORK_TIMEOUT = 3000;
   public static final int SOURCE_PORT = 40200; // used by rdworks in Windows
@@ -283,7 +286,7 @@ public class Ruida
    */
   public void lineTo(double x, double y) throws RuntimeException
   {
-    layer.vectorTo(x, y, false);
+    layer.vectorTo(x * FACTOR_X, y * FACTOR_Y, false);
   }
 
   /**
@@ -291,7 +294,7 @@ public class Ruida
    */
   public void moveTo(double x, double y) throws RuntimeException
   {
-    layer.vectorTo(x, y, true);
+    layer.vectorTo(x * FACTOR_X, y * FACTOR_Y, true);
   }
 
 /*-------------------------------------------------------------------------*/
