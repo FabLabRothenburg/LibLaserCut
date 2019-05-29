@@ -16,61 +16,37 @@
  * along with LibLaserCut. If not, see <http://www.gnu.org/licenses/>.
  *
  **/
-
 package com.t_oster.liblasercut.drivers;
 
-import com.t_oster.liblasercut.LaserProperty;
+import com.t_oster.liblasercut.PowerSpeedFocusProperty;
 import java.util.Arrays;
 import java.util.LinkedList;
 
 /**
+ * This class adds custom properties for Epilog engraving.
  *
- * @author Thomas Oster <thomas.oster@rwth-aachen.de>
+ * @author Ben Buxton <bbuxton@gmail.com>
  */
-public class LaosEngraveProperty extends LaosCutterProperty
+public class EpilogEngraveProperty extends PowerSpeedFocusProperty
 {
-  
-  public LaosEngraveProperty(boolean hidePurge, boolean hideVentilation, boolean hideFocus, boolean hideFrequency)
-  {
-    super(hidePurge, hideVentilation, hideFocus, hideFrequency);
+  public EpilogEngraveProperty(boolean hideSoftwareFocus) {
+    super(hideSoftwareFocus);
   }
-  
-  public LaosEngraveProperty()
+  public EpilogEngraveProperty()
   {};
   
-  public LaosEngraveProperty(LaserProperty o)
-  {
-    for (String k : o.getPropertyKeys())
-    {
-      try
-      {
-        this.setProperty(k, o.getProperty(k));
-      }
-      catch (Exception e)
-      {
-      }
-    }
-  }
-  
-  private static final String BOTTOM_UP = "engrave bottom up";
+  private static final String BOTTOM_UP = "bottom up";
   private boolean engraveBottomUp = false;
   public boolean isEngraveBottomUp()
   {
     return engraveBottomUp;
   }
-  private static final String UNIDIRECTIONAL = "engrave unidirectional";
-  private boolean engraveUnidirectional = false;
-  public boolean isEngraveUnidirectional()
-  {
-    return engraveUnidirectional;
-  }
-  
   @Override
-  protected String[] getPropertyKeys(boolean showHidden) {
+  public String[] getPropertyKeys()
+  {
     LinkedList<String> result = new LinkedList<String>();
-    result.addAll(Arrays.asList(super.getPropertyKeys(showHidden)));
+    result.addAll(Arrays.asList(super.getPropertyKeys()));
     result.add(BOTTOM_UP);
-    result.add(UNIDIRECTIONAL);
     return result.toArray(new String[0]);
   }
 
@@ -80,10 +56,6 @@ public class LaosEngraveProperty extends LaosCutterProperty
     if (BOTTOM_UP.equals(name))
     {
       return (Boolean) engraveBottomUp;
-    }
-    else if (UNIDIRECTIONAL.equals(name))
-    {
-      return (Boolean) engraveUnidirectional;
     }
     else
     {
@@ -98,10 +70,6 @@ public class LaosEngraveProperty extends LaosCutterProperty
     {
       engraveBottomUp = (Boolean) value;
     }
-    else if (UNIDIRECTIONAL.equals(name))
-    {
-      engraveUnidirectional = (Boolean) value;
-    }
     else
     {
       super.setProperty(name, value);
@@ -109,14 +77,13 @@ public class LaosEngraveProperty extends LaosCutterProperty
   }
   
   @Override
-  public LaosEngraveProperty clone()
+  public EpilogEngraveProperty clone()
   {
-    LaosEngraveProperty result = new LaosEngraveProperty(hidePurge, hideVentilation, hideFocus, hideFrequency);
-    for (String s:this.getPropertyKeys(true))
+    EpilogEngraveProperty result = new EpilogEngraveProperty();
+    for (String s:this.getPropertyKeys())
     {
       result.setProperty(s, this.getProperty(s));
     }
     return result;
   }
-
 }

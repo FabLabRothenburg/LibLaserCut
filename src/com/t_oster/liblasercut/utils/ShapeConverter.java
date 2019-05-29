@@ -45,21 +45,33 @@ public class ShapeConverter
   {
     AffineTransform scale = AffineTransform.getScaleInstance(1, 1);
     PathIterator iter = shape.getPathIterator(scale, 1);
-    int startx = 0;
-    int starty = 0;
+    double startx = 0;
+    double starty = 0;
+    int lastx = 0;
+    int lasty = 0;
     while (!iter.isDone())
     {
       double[] test = new double[8];
       int result = iter.currentSegment(test);
       if (result == PathIterator.SEG_MOVETO)
       {
-        vectorpart.moveto((int) test[0], (int) test[1]);
-        startx = (int) test[0];
-        starty = (int) test[1];
+        vectorpart.moveto(test[0], test[1]);
+        startx = test[0];
+        starty = test[1];
+        lastx = (int) startx;
+        lasty = (int) starty;
       }
       else if (result == PathIterator.SEG_LINETO)
       {
-        vectorpart.lineto((int) test[0], (int) test[1]);
+        // skip lines with length 0 https://github.com/t-oster/LibLaserCut/issues/87
+        // (or length 0 after converting to integer, so that integer-based drivers have no problems)
+        double x = test[0];
+        double y = test[1];
+        if ((int) x != lastx || (int) y != lasty) {
+          vectorpart.lineto(x, y);
+          lastx = (int) x;
+          lasty = (int) y;
+        }
       }
       else if (result == PathIterator.SEG_CLOSE)
       {

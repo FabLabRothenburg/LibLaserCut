@@ -111,13 +111,13 @@ abstract class EpilogCutter extends LaserCutter
   }
 
   @Override
-  public LaserProperty getLaserPropertyForRasterPart() {
-    return new PowerSpeedFocusProperty(isHideSoftwareFocus());
+  public EpilogEngraveProperty getLaserPropertyForRasterPart() {
+    return new EpilogEngraveProperty(isHideSoftwareFocus());
   }
 
   @Override
-  public LaserProperty getLaserPropertyForRaster3dPart() {
-    return new PowerSpeedFocusProperty(isHideSoftwareFocus());
+  public EpilogEngraveProperty getLaserPropertyForRaster3dPart() {
+    return new EpilogEngraveProperty(isHideSoftwareFocus());
   }
 
   private void waitForResponse(int expected) throws IOException, Exception
@@ -452,7 +452,8 @@ abstract class EpilogCutter extends LaserCutter
     PrintStream out = new PrintStream(result, true, "US-ASCII");
     if (rp != null)
     {
-      PowerSpeedFocusProperty prop = (PowerSpeedFocusProperty) rp.getLaserProperty();
+      EpilogEngraveProperty prop = (EpilogEngraveProperty) rp.getLaserProperty();
+      boolean bu = prop.isEngraveBottomUp();
       /* PCL/RasterGraphics resolution. */
       out.printf("\033*t%dR", (int) rp.getDPI());
       /* Raster Orientation: Printed in current direction */
@@ -464,8 +465,8 @@ abstract class EpilogCutter extends LaserCutter
       /* Focus */
       out.printf("\033&y%dA", mm2focus(prop.getFocus()));
 
-      out.printf("\033*r%dT", rp != null ? rp.getMaxY() : 10);//height);
-      out.printf("\033*r%dS", rp != null ? rp.getMaxX() : 10);//width);
+      out.printf("\033*r%dT", rp != null ? (int) rp.getMaxY() : 10);//height);
+      out.printf("\033*r%dS", rp != null ? (int) rp.getMaxX() : 10);//width);
             /* Raster compression:
        *  2 = TIFF encoding
        *  7 = TIFF encoding, 3d-mode,
@@ -476,16 +477,16 @@ abstract class EpilogCutter extends LaserCutter
        */
       out.printf("\033*b%dMLT", 7);
       /* Raster direction (1 = up, 0=down) */
-      out.printf("\033&y%dO", 0);
+      out.printf("\033&y%dO", bu?1:0);
       /* start at current position */
       out.printf("\033*r1A");
       Point sp = rp.getRasterStart();
       boolean leftToRight = true;
       ByteArrayList line = new ByteArrayList(rp.getRasterWidth());
       ByteArrayList encoded = new ByteArrayList(rp.getRasterWidth());
-      for (int y = 0; y < rp.getRasterHeight(); y++)
+      for (int y = bu ? rp.getRasterHeight()-1 : 0; bu ? y >= 0 : y < rp.getRasterHeight(); y += bu ? -1 : 1)
       {
-	rp.getInvertedRasterLine(y, line);
+        rp.getInvertedRasterLine(y, line);
         for (int n = 0; n < line.size(); n++)
         {//Apperantly the other power settings are ignored, so we have to scale
           int x = line.get(n);
@@ -509,8 +510,8 @@ abstract class EpilogCutter extends LaserCutter
         }
         if (line.size() > 0)
         {
-          out.printf("\033*p%dX", sp.x + jump);
-          out.printf("\033*p%dY", sp.y + y);
+          out.printf("\033*p%dX", (int) sp.x + jump);
+          out.printf("\033*p%dY", (int) sp.y + y);
           if (leftToRight)
           {
             out.printf("\033*b%dA", line.size());
@@ -546,7 +547,8 @@ abstract class EpilogCutter extends LaserCutter
 
   private byte[] generateDummyRaster(JobPart jp) throws UnsupportedEncodingException
   {
-    PowerSpeedFocusProperty prop = new PowerSpeedFocusProperty();
+    EpilogEngraveProperty prop = new EpilogEngraveProperty();
+    boolean bu = prop.isEngraveBottomUp();
     ByteArrayOutputStream result = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(result, true, "US-ASCII");
     /* PCL/RasterGraphics resolution. */
@@ -560,8 +562,8 @@ abstract class EpilogCutter extends LaserCutter
     /* Focus */
     out.printf("\033&y%dA", mm2focus(prop.getFocus()));
 
-    out.printf("\033*r%dT", jp.getMaxY());//height);
-    out.printf("\033*r%dS", jp.getMaxX());//width);
+    out.printf("\033*r%dT", (int) jp.getMaxY());//height);
+    out.printf("\033*r%dS", (int) jp.getMaxX());//width);
         /* Raster compression:
      *  2 = TIFF encoding
      *  7 = TIFF encoding, 3d-mode,
@@ -572,7 +574,7 @@ abstract class EpilogCutter extends LaserCutter
      */
     out.printf("\033*b2M");
     /* Raster direction (1 = up, 0=down) */
-    out.printf("\033&y%dO", 0);
+    out.printf("\033&y%dO", bu?1:0);
     /* start at current position */
     out.printf("\033*r1A");
     out.printf("\033*rC");       // end raster
@@ -581,7 +583,8 @@ abstract class EpilogCutter extends LaserCutter
 
   private byte[] generateRasterPCL(RasterPart rp) throws UnsupportedEncodingException, IOException
   {
-    PowerSpeedFocusProperty prop = (PowerSpeedFocusProperty) rp.getLaserProperty();
+    EpilogEngraveProperty prop = (EpilogEngraveProperty) rp.getLaserProperty();
+    boolean bu = prop.isEngraveBottomUp();
     ByteArrayOutputStream result = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(result, true, "US-ASCII");
     /* PCL/RasterGraphics resolution. */
@@ -595,8 +598,8 @@ abstract class EpilogCutter extends LaserCutter
     /* Focus */
     out.printf("\033&y%dA", mm2focus(prop.getFocus()));
 
-    out.printf("\033*r%dT", rp.getMaxY());//height);
-    out.printf("\033*r%dS", rp.getMaxX());//width);
+    out.printf("\033*r%dT", (int) rp.getMaxY());//height);
+    out.printf("\033*r%dS", (int) rp.getMaxX());//width);
         /* Raster compression:
      *  2 = TIFF encoding
      *  7 = TIFF encoding, 3d-mode,
@@ -607,7 +610,7 @@ abstract class EpilogCutter extends LaserCutter
      */
     out.printf("\033*b2M");
     /* Raster direction (1 = up, 0=down) */
-    out.printf("\033&y%dO", 0);
+    out.printf("\033&y%dO", bu?1:0);
     /* start at current position */
     out.printf("\033*r1A");
 
@@ -617,7 +620,7 @@ abstract class EpilogCutter extends LaserCutter
       boolean leftToRight = true;
       ByteArrayList line = new ByteArrayList(rp.getRasterWidth());
       ByteArrayList encoded = new ByteArrayList(rp.getRasterWidth());
-      for (int y = 0; y < rp.getRasterHeight(); y++)
+      for (int y = bu ? rp.getRasterHeight()-1 : 0; bu ? y >= 0 : y < rp.getRasterHeight(); y += bu ? -1 : 1)
       {
         rp.getRasterLine(y, line);
         //Remove leading zeroes, but keep track of the offset
@@ -634,8 +637,8 @@ abstract class EpilogCutter extends LaserCutter
         }
         if (line.size() > 0)
         {
-          out.printf("\033*p%dX", sp.x + jump * 8);
-          out.printf("\033*p%dY", sp.y + y);
+          out.printf("\033*p%dX", (int) sp.x + jump * 8);
+          out.printf("\033*p%dY", (int) sp.y + y);
           if (leftToRight)
           {
             out.printf("\033*b%dA", line.size());
@@ -737,18 +740,18 @@ abstract class EpilogCutter extends LaserCutter
           }
           case MOVETO:
           {
-            out.printf("PU%d,%d;", cmd.getX(), cmd.getY());
+            out.printf("PU%d,%d;", (int) cmd.getX(), (int) cmd.getY());
             break;
           }
           case LINETO:
           {
             if (lastType == null || lastType != VectorCommand.CmdType.LINETO)
             {
-              out.printf("PD%d,%d", cmd.getX(), cmd.getY());
+              out.printf("PD%d,%d", (int) cmd.getX(), (int) cmd.getY());
             }
             else
             {
-              out.printf(",%d,%d", cmd.getX(), cmd.getY());
+              out.printf(",%d,%d", (int) cmd.getX(), (int) cmd.getY());
             }
             break;
           }
@@ -1043,7 +1046,7 @@ abstract class EpilogCutter extends LaserCutter
     return (int) result;
   }
 
-  private double distance(int x, int y, Point p)
+  private double distance(double x, double y, Point p)
   {
     return Math.sqrt(Math.pow(p.x - x, 2) + Math.pow(p.y - y, 2));
   }
