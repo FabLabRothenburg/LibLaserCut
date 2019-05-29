@@ -275,7 +275,7 @@ public class ThunderLaser extends LaserCutter
     return (int) result;
   }
 
-  private double distance(int x, int y, Point p)
+  private double distance(double x, double y, Point p)
   {
     return Math.sqrt(Math.pow(p.x - x, 2) + Math.pow(p.y - y, 2));
   }
