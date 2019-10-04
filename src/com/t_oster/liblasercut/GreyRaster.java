@@ -16,45 +16,59 @@
  * along with LibLaserCut. If not, see <http://www.gnu.org/licenses/>.
  *
  **/
+
 package com.t_oster.liblasercut;
 
-import com.t_oster.liblasercut.drivers.*;
-
 /**
- * This class contains Version information
- * etc from the Library
+ *
  * @author Thomas Oster <thomas.oster@rwth-aachen.de>
  */
-public class LibInfo
+public class GreyRaster implements GreyscaleRaster, RasterElement.Provider
 {
-  private static String VERSION = "visicut1.7";
-  
-  public static String getVersion()
+  public final RasterElement raster;
+
+  public GreyRaster(int width, int height)
   {
-    return VERSION;
+    this(width, height, 8);
   }
   
-  public static Class[] getSupportedDrivers()
+  public GreyRaster(int width, int height, int bitDepth)
   {
-    return new Class[]{
-      EpilogZing.class,
-      EpilogHelix.class,
-      LaosCutter.class,
-      GoldCutHPGL.class,
-      Lasersaur.class,
-      Dummy.class,
-      IModelaMill.class,
-      SampleDriver.class,
-      ExportSVG.class,
-      MakeBlockXYPlotter.class,
-      GenericGcodeDriver.class,
-      Grbl.class,
-      SmoothieBoard.class,
-      Marlin.class,
-      FullSpectrumCutter.class,
-      ThunderLaser.class,
-      LaserToolsTechnicsCutter.class,
-      K40NanoDriver.class
-    };
+    this(new RasterElement(width, height, bitDepth, 1));
+  }
+  
+  public GreyRaster(RasterElement raster) 
+  {
+    this.raster = raster;
+  }
+
+  @Override
+  public int getWidth()
+  {
+    return this.raster.getWidth();
+  }
+
+  @Override
+  public int getGreyScale(int x, int y)
+  {
+    return this.raster.getPixel(x, y);
+  }
+
+  @Override
+  public void setGreyScale(int x, int y, int grey)
+  {
+    this.raster.setPixel(x,y, grey);
+  }
+
+  @Override
+  public int getHeight()
+  {
+     return this.raster.getHeight();
+  }
+
+  @Override
+  public RasterElement getRaster()
+  {
+    return raster;
   }
 }
