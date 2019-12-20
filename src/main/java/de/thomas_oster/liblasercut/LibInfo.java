@@ -52,6 +52,7 @@ public class LibInfo
       SmoothieBoard.class,
       Marlin.class,
       FullSpectrumCutter.class,
+      ThunderLaser.class,
       LaserToolsTechnicsCutter.class,
       K40NanoDriver.class
     };
